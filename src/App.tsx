@@ -20,7 +20,12 @@ import {
   type Format,
   type TrainingSession,
 } from "./types";
-import { daysUntil, formatDate, formatTimeRange } from "./utils";
+import {
+  checklistProgress,
+  daysUntil,
+  formatDate,
+  formatTimeRange,
+} from "./utils";
 
 type SortKey = "created" | "date" | "university";
 type ViewMode = "table" | "calendar";
@@ -49,6 +54,31 @@ function DateBadge({ iso }: { iso: string }) {
         </span>
       )}
     </span>
+  );
+}
+
+function ChecklistBadge({ session }: { session: TrainingSession }) {
+  const { done, total } = checklistProgress(session.checklist);
+  const complete = done === total;
+  const pct = Math.round((done / total) * 100);
+  return (
+    <div className="flex items-center gap-2" title={`${done}/${total}`}>
+      <div className="h-1.5 w-14 overflow-hidden rounded-full bg-slate-200">
+        <div
+          className={`h-full rounded-full ${
+            complete ? "bg-emerald-500" : "bg-indigo-500"
+          }`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span
+        className={`text-xs font-medium ${
+          complete ? "text-emerald-600" : "text-slate-500"
+        }`}
+      >
+        {done}/{total}
+      </span>
+    </div>
   );
 }
 
@@ -339,6 +369,7 @@ function AppInner() {
                       <th className="px-4 py-3">{t("format")}</th>
                       <th className="px-4 py-3 text-right">{t("attendees")}</th>
                       <th className="px-4 py-3">{t("status")}</th>
+                      <th className="px-4 py-3">{t("checklistProgress")}</th>
                       <th className="px-4 py-3">{t("meetingUrl")}</th>
                       <th className="px-4 py-3 text-right">{t("actions")}</th>
                     </tr>
@@ -356,6 +387,11 @@ function AppInner() {
                           {s.trainer && (
                             <div className="mt-0.5 text-xs text-slate-400">
                               {t("trainer")}: {s.trainer}
+                            </div>
+                          )}
+                          {s.remark && (
+                            <div className="mt-0.5 text-xs text-slate-500">
+                              📝 {s.remark}
                             </div>
                           )}
                           {s.notes && (
@@ -427,6 +463,9 @@ function AppInner() {
                           >
                             {t(`status_${s.status}` as const)}
                           </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <ChecklistBadge session={s} />
                         </td>
                         <td className="px-4 py-3">
                           {s.meetingUrl ? (

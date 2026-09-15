@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "./LanguageContext";
 import {
   AUDIENCES,
+  CHECKLIST_ITEMS,
   FORMATS,
   STATUSES,
   TOPICS,
+  type ChecklistKey,
   type SessionInput,
   type TrainingSession,
 } from "./types";
+import { checklistProgress } from "./utils";
 
 interface Props {
   initial: TrainingSession | null;
@@ -34,6 +37,8 @@ function emptyInput(): SessionInput {
     expectedAttendees: 0,
     registeredAttendees: 0,
     status: "contacted",
+    checklist: {},
+    remark: "",
     notes: "",
   };
 }
@@ -58,6 +63,14 @@ export default function SessionForm({ initial, onSubmit, onCancel }: Props) {
   const set = <K extends keyof SessionInput>(key: K, value: SessionInput[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
+  const toggleCheck = (key: ChecklistKey) =>
+    setForm((f) => ({
+      ...f,
+      checklist: { ...f.checklist, [key]: !f.checklist[key] },
+    }));
+
+  const progress = checklistProgress(form.checklist);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.university.trim()) {
@@ -74,6 +87,7 @@ export default function SessionForm({ initial, onSubmit, onCancel }: Props) {
       coordinatorContact: form.coordinatorContact.trim(),
       location: form.location.trim(),
       meetingUrl: form.meetingUrl.trim(),
+      remark: form.remark.trim(),
       notes: form.notes.trim(),
       expectedAttendees: Math.max(0, Number(form.expectedAttendees) || 0),
       registeredAttendees: Math.max(0, Number(form.registeredAttendees) || 0),
@@ -309,6 +323,60 @@ export default function SessionForm({ initial, onSubmit, onCancel }: Props) {
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Checklist */}
+          <div className="sm:col-span-2">
+            <div className="mb-2 flex items-center justify-between">
+              <label className={`${labelClass} mb-0`}>{t("checklist")}</label>
+              <span className="text-xs font-medium text-slate-500">
+                {progress.done}/{progress.total}
+              </span>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all"
+                  style={{
+                    width: `${(progress.done / progress.total) * 100}%`,
+                  }}
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                {CHECKLIST_ITEMS.map((key) => (
+                  <label
+                    key={key}
+                    className="flex cursor-pointer items-start gap-2 rounded px-1.5 py-1 text-sm hover:bg-white"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      checked={!!form.checklist[key]}
+                      onChange={() => toggleCheck(key)}
+                    />
+                    <span
+                      className={
+                        form.checklist[key]
+                          ? "text-slate-400 line-through"
+                          : "text-slate-700"
+                      }
+                    >
+                      {t(`check_${key}` as const)}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Remark */}
+          <div className="sm:col-span-2">
+            <label className={labelClass}>{t("remark")}</label>
+            <input
+              className={inputClass}
+              value={form.remark}
+              onChange={(e) => set("remark", e.target.value)}
+            />
           </div>
 
           {/* Notes */}

@@ -1,6 +1,7 @@
 import type { TrainingSession } from "./types";
 import type { Lang } from "./i18n";
 import { translations } from "./i18n";
+import { checklistProgress } from "./utils";
 
 function escapeCsv(value: string | number): string {
   const s = String(value ?? "");
@@ -41,10 +42,14 @@ export function exportSessionsToCsv(
     t.coordinator,
     t.coordinatorContact,
     t.status,
+    t.checklistProgress,
+    t.remark,
     t.notes,
   ];
 
-  const rows = sessions.map((s) => [
+  const rows = sessions.map((s) => {
+    const prog = checklistProgress(s.checklist);
+    return [
     s.university,
     s.faculty,
     topicLabel(s, t),
@@ -58,11 +63,14 @@ export function exportSessionsToCsv(
     s.meetingUrl,
     s.expectedAttendees || "",
     s.registeredAttendees || "",
-    s.coordinator,
-    s.coordinatorContact,
-    t[`status_${s.status}` as const],
-    s.notes,
-  ]);
+      s.coordinator,
+      s.coordinatorContact,
+      t[`status_${s.status}` as const],
+      `${prog.done}/${prog.total}`,
+      s.remark,
+      s.notes,
+    ];
+  });
 
   const lines = [headers, ...rows]
     .map((cols) => cols.map(escapeCsv).join(","))

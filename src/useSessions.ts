@@ -24,6 +24,8 @@ function normalize(raw: Partial<TrainingSession>): TrainingSession {
     expectedAttendees: raw.expectedAttendees ?? 0,
     registeredAttendees: raw.registeredAttendees ?? 0,
     status: raw.status ?? "contacted",
+    checklist: raw.checklist ?? {},
+    remark: raw.remark ?? "",
     notes: raw.notes ?? "",
     createdAt: raw.createdAt ?? Date.now(),
   };

@@ -11,6 +11,29 @@ export type Audience = "students" | "lecturers" | "both";
 // Delivery format.
 export type Format = "onsite" | "online" | "hybrid";
 
+// Fixed preparation checklist shared by every training session.
+// The order here is the display order.
+export const CHECKLIST_ITEMS = [
+  "sent_email_workshop_setup",
+  "invitation_letter_speaker",
+  "book_hotel",
+  "pre_post_test_eval",
+  "agenda",
+  "sharing_slide",
+  "giveaway",
+  "link_ms_team",
+  "sent_email_confirmation",
+  "remind_pr_tigersoft_checkin",
+  "remind_booking_calendar",
+  "summary_participants",
+  "sent_email_thankyou_linkedin",
+] as const;
+
+export type ChecklistKey = (typeof CHECKLIST_ITEMS)[number];
+
+// Map of checklist key -> done (true/false). Missing keys are treated as false.
+export type Checklist = Partial<Record<ChecklistKey, boolean>>;
+
 // Lifecycle of a training engagement, from first contact to completion.
 export type SessionStatus =
   | "contacted"
@@ -39,6 +62,8 @@ export interface TrainingSession {
   expectedAttendees: number;
   registeredAttendees: number;
   status: SessionStatus;
+  checklist: Checklist; // preparation to-do progress
+  remark: string; // short remark (separate from notes)
   notes: string;
   createdAt: number;
 }

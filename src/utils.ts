@@ -28,6 +28,21 @@ export function daysUntil(iso: string): number | null {
   return Math.round(diff / (1000 * 60 * 60 * 24));
 }
 
+import { CHECKLIST_ITEMS, type Checklist } from "./types";
+
+/** Count how many checklist items are marked done, out of the total. */
+export function checklistProgress(checklist: Checklist): {
+  done: number;
+  total: number;
+} {
+  const total = CHECKLIST_ITEMS.length;
+  let done = 0;
+  for (const key of CHECKLIST_ITEMS) {
+    if (checklist[key]) done += 1;
+  }
+  return { done, total };
+}
+
 export function todayISO(): string {
   const d = new Date();
   const off = d.getTimezoneOffset();
